@@ -1,14 +1,36 @@
+const utilsHelper = require("../helpers/utils.helper");
+const Game = require("../models/Game");
 const Order = require("../models/Order");
+const User = require("../models/User");
 
 const orderController = {};
 
+orderController.createNewOrder = async (req, res, next) => {
+  try {
+    const { games } = req.body;
+    let userId = req.userId;
+    const order = await Order.create({ user: userId, games });
+
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { order },
+      null,
+      "New Order created!!"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 orderController.getCurrentOrder = async (req, res, next) => {
   try {
-    let { ...query } = req.query;
-    let userId = req.params.id;
-    const order = await Order.findOne({ ...query, userId: userId })
-      .populate("userId")
-      .populate("products");
+    let userId = req.userId;
+    const order = await Order.findOne({
+      user: userId,
+      status: "pending",
+    }).populate("games");
     utilsHelper.sendResponse(
       res,
       200,
@@ -24,43 +46,41 @@ orderController.getCurrentOrder = async (req, res, next) => {
 
 orderController.addItemToOrder = async (req, res, next) => {
   try {
-    const orderId = req.params.id;
-    const itemId = req.body.product;
-
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { $push: { products: itemId } },
+    const userId = req.userId;
+    const currentUser = await User.findById(userId);
+    const orderId = currentUser.cart;
+    const gameId = req.body.game;
+    const order = await Order.findOneAndUpdate(
+      { _id: orderId },
+      { $push: { games: gameId } },
       { new: true }
     );
+
     if (!order) {
       return next(new Error("order not found or User not authorized"));
     }
-    utilsHelper.sendResponse(res, 200, true, { order }, null, "product added");
+    utilsHelper.sendResponse(res, 200, true, { order }, null, "game added!!");
   } catch (error) {
     next(error);
   }
 };
+
 orderController.DeleteItemFromOrder = async (req, res, next) => {
   try {
-    const orderId = req.params.id;
-    const itemId = req.body.product;
-    console.log("orderId", orderId, " itemId ", itemId);
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { $pull: { products: itemId } },
+    const userId = req.userId;
+    const currentUser = await User.findById(userId);
+    const orderId = currentUser.cart;
+    const itemId = req.params.id;
+
+    const order = await Order.findOneAndUpdate(
+      { _id: orderId },
+      { $pull: { games: itemId } },
       { new: true }
     );
     if (!order) {
       return next(new Error("order not found or User not authorized"));
     }
-    utilsHelper.sendResponse(
-      res,
-      200,
-      true,
-      { order },
-      null,
-      "product deleted"
-    );
+    utilsHelper.sendResponse(res, 200, true, { order }, null, "game removed!!");
   } catch (error) {
     next(error);
   }
@@ -81,6 +101,48 @@ orderController.deleteOrder = async (req, res, next) => {
       return next(new Error("order not found or User not authorized"));
     }
     utilsHelper.sendResponse(res, 200, true, nul, null, "order deleted!!");
+  } catch (error) {
+    next(error);
+  }
+};
+
+orderController.payment = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const currentUser = await User.findById(userId);
+    const orderId = currentUser.cart;
+    const total = req.params.total;
+    if (total < currentUser.balance) {
+      const order = await Order.findByIdAndUpdate(
+        orderId,
+        { status: "paid" },
+        { new: true }
+      );
+      const newOrder = await Order.create({ user: userId });
+      //update current user balance and ownedGame
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          balance: currentUser.balance - total,
+          cart: newOrder._id,
+          ownedGames: currentUser.ownedGames.concat(order.games),
+        },
+        { new: true }
+      );
+      if (!order) {
+        return next(new Error("order not found or User not authorized"));
+      }
+      utilsHelper.sendResponse(res, 200, true, null, null, "order paid!!");
+    } else if (total > currentUser.balance) {
+      utilsHelper.sendResponse(
+        res,
+        400,
+        false,
+        null,
+        null,
+        "User balance is not enough!!"
+      );
+    }
   } catch (error) {
     next(error);
   }

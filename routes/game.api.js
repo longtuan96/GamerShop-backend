@@ -15,11 +15,32 @@ const router = express.Router();
 router.post("/", loginRequired, adminRequired, gameController.addGame);
 
 /**
+ * @route POST api/game/:id
+ * @description Admin can update game
+ * @access Admin only
+ */
+router.put("/:id", loginRequired, adminRequired, gameController.updateGame);
+
+/**
+ * @route DELETE api/game/:id
+ * @description Admin can delete game (game info still there)
+ * @access Admin only
+ */
+router.delete("/:id", loginRequired, adminRequired, gameController.deleteGame);
+
+/**
  * @route Get api/game
- * @description  see all added Game
+ * @description  see added Game with pagination
  * @access Everyone
  */
-router.get("/", gameController.getAllGames);
+router.get("/", gameController.getGames);
+
+/**
+ * @route Get api/game/admin
+ * @description  see added Game with pagination
+ * @access Everyone
+ */
+router.get("/admin", loginRequired, adminRequired, gameController.getAllGames);
 
 /**
  * @route Get api/game/:id
@@ -27,5 +48,19 @@ router.get("/", gameController.getAllGames);
  * @access Everyone
  */
 router.get("/:id", gameController.getSingleGame);
+
+/**
+ * @route GET api/game/search
+ * @description  search name of game
+ * @access Everyone
+ */
+router.post("/search", gameController.searchGame);
+
+/**
+ * @route POST api/game/search
+ * @description  list game with deals
+ * @access Everyone
+ */
+router.post("/deals", gameController.getDiscountGame);
 
 module.exports = router;

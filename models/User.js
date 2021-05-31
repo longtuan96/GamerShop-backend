@@ -10,15 +10,21 @@ const userSchema = Schema(
     email: { type: String, required: true, unique: true },
     role: { type: String, default: "user" },
     avatarUrl: { type: String, require: false, default: "" },
+    language: { type: String, default: "English" },
+    gender: { type: String, default: "" },
+    balance: { type: Number, default: 0 },
     password: { type: String, required: true },
     isDeleted: { type: Boolean, default: false },
-    Cart: { type: mongoose.Schema.Types.ObjectId },
+    cart: { type: mongoose.Schema.Types.ObjectId, require: true, ref: "Order" },
+
+    ownedGames: [{ type: mongoose.Schema.Types.ObjectId, ref: "Game" }],
+    favorite: [{ type: mongoose.Schema.Types.ObjectId, ref: "Game" }],
   },
   { timestamps: true }
 );
 userSchema.methods.toJSON = function () {
   const obj = this._doc;
-  // delete obj.password;
+  delete obj.password;
   // delete obj.emailVerified;
   // delete obj.emailVerificationCode;
   delete obj.isDeleted;
@@ -26,7 +32,7 @@ userSchema.methods.toJSON = function () {
 };
 userSchema.methods.generateToken = async function () {
   const accessToken = await jwt.sign({ _id: this._id }, JWT_SECRET_KEY, {
-    expiresIn: "1d",
+    expiresIn: "7d",
   });
   return accessToken;
 };
