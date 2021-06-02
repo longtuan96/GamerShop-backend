@@ -12,6 +12,13 @@ const router = express.Router();
 router.get("/", loginRequired, orderController.getCurrentOrder);
 
 /**
+ * @route GET api/order/all
+ * @description User can get all their orders
+ * @access user priviledge
+ */
+router.get("/all", loginRequired, orderController.getCurrentUserAllOrder);
+
+/**
  * @Route POST api/order
  * @description User can create new order
  * @access login required

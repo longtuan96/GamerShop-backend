@@ -12,6 +12,8 @@ const orderSchema = Schema(
       enum: ["pending", "paid"],
       default: "pending",
     },
+
+    total: { type: Number, default: 0 },
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }

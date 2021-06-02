@@ -6,16 +6,26 @@ const gameController = {};
 
 gameController.getAllGames = async (req, res, next) => {
   try {
-    let { page, limit, sortBy, ...filter } = { ...req.query };
-    page = parseInt(page) || 1;
-    limit = parseInt(limit) || 10;
+    let { page, limit, sortBy, name, ...filter } = { ...req.query };
+    let pattern = `${name}`;
+    if (name === null || name === undefined || name === "") {
+      pattern = "";
+    }
 
-    const totalGames = await Game.countDocuments({ ...filter });
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 5;
+
+    const totalGames = await Game.countDocuments({
+      name: { $regex: pattern, $options: "i" },
+      ...filter,
+    });
 
     const totalPages = Math.ceil(totalGames / limit);
     const offset = limit * (page - 1);
 
-    const games = await Game.find({ ...filter })
+    const games = await Game.find({
+      name: { $regex: pattern, $options: "i" },
+    })
       .skip(offset)
       .limit(limit);
 
@@ -46,10 +56,9 @@ gameController.getGames = async (req, res, next) => {
     const totalPages = Math.ceil(totalGames / limit);
     const offset = limit * (page - 1);
 
-    // const games = await Game.find({
-    //   name: { $regex: pattern },
-    // });
-    const games = await Game.find({}).skip(offset).limit(limit);
+    const games = await Game.find({ ...filter })
+      .skip(offset)
+      .limit(limit);
 
     utilsHelper.sendResponse(
       res,

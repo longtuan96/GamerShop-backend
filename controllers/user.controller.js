@@ -80,8 +80,8 @@ userController.updateCurrentUser = async (req, res, next) => {
     const userId = req.userId;
     const oldUser = await User.findById(userId);
 
-    const newUser = await User.findByIdAndUpdate(
-      userId,
+    const newUser = await User.findOneAndUpdate(
+      { _id: userId },
       {
         name: name || oldUser.name,
         avatarUrl: avatarUrl || oldUser.avatarUrl,

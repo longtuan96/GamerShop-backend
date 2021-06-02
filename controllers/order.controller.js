@@ -44,6 +44,25 @@ orderController.getCurrentOrder = async (req, res, next) => {
   }
 };
 
+orderController.getCurrentUserAllOrder = async (req, res, next) => {
+  try {
+    let userId = req.userId;
+    const orders = await Order.find({
+      user: userId,
+    }).populate("games");
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { orders },
+      null,
+      "get current User all Orders success"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 orderController.addItemToOrder = async (req, res, next) => {
   try {
     const userId = req.userId;
@@ -115,7 +134,7 @@ orderController.payment = async (req, res, next) => {
     if (total < currentUser.balance) {
       const order = await Order.findByIdAndUpdate(
         orderId,
-        { status: "paid" },
+        { status: "paid", total: total },
         { new: true }
       );
       const newOrder = await Order.create({ user: userId });
