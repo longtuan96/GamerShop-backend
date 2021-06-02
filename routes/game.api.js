@@ -57,10 +57,17 @@ router.get("/:id", gameController.getSingleGame);
 router.post("/search", gameController.searchGame);
 
 /**
- * @route POST api/game/search
+ * @route POST api/game/deals
  * @description  list game with deals
  * @access Everyone
  */
 router.post("/deals", gameController.getDiscountGame);
+
+/**
+ * @route POST api/game/genre
+ * @description  list game with genre
+ * @access Everyone
+ */
+router.post("/genre/:genre", gameController.getGenreGame);
 
 module.exports = router;

@@ -19,6 +19,7 @@ const gameSchema = Schema(
       },
     ],
     poster: { type: String, required: true },
+    poster_vertical: { type: String, required: true },
     picture: { type: String, required: true },
     icon: { type: String, required: true },
     publisher: { type: String, required: true },
@@ -32,7 +33,24 @@ const gameSchema = Schema(
       default: 0,
       enum: [0, 25, 30, 50, 40, 75],
     },
-    genre: [{ type: String }],
+    genre: [
+      {
+        type: String,
+        require: true,
+        enum: [
+          "Horror",
+          "FPS",
+          "Action",
+          "RPG",
+          "MMORPG",
+          "Simulation",
+          "Fighting",
+          "Racing",
+          "Indie",
+          "Sport",
+        ],
+      },
+    ],
     languages: [{ type: String, default: "English" }],
     price: { type: Number, default: 0 },
     additionalInfo: {

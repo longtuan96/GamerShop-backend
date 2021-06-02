@@ -180,12 +180,19 @@ gameController.deleteGame = async (req, res, next) => {
 
 gameController.searchGame = async (req, res, next) => {
   try {
-    let { page, limit, sortBy, name, ...filter } = { ...req.query };
+    let { page, limit, sortBy, name, genre, ...filter } = { ...req.query };
+
+    let pattern = `${name}`;
+    if (name === null || name === undefined || name === "") {
+      pattern = "";
+    }
+
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
     const totalGames = await Game.countDocuments({
-      name: { $regex: pattern },
+      name: { $regex: pattern, $options: "i" },
+
       ...filter,
       isDeleted: false,
     });
@@ -193,13 +200,8 @@ gameController.searchGame = async (req, res, next) => {
     const totalPages = Math.ceil(totalGames / limit);
     const offset = limit * (page - 1);
 
-    let pattern = `${name}`;
-    if (name === null || name === undefined || name === "") {
-      pattern = "";
-    }
-
     const games = await Game.find({
-      name: { $regex: pattern },
+      name: { $regex: pattern, $options: "i" },
     })
       .skip(offset)
       .limit(limit);
@@ -245,6 +247,43 @@ gameController.getDiscountGame = async (req, res, next) => {
       { games, page, totalPages },
       null,
       "All Game listed"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+gameController.getGenreGame = async (req, res, next) => {
+  try {
+    let { page, limit, sortBy, name, ...filter } = req.query;
+
+    let genre = req.params.genre;
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
+
+    const totalGames = await Game.countDocuments({
+      genre: genre,
+      ...filter,
+      isDeleted: false,
+    });
+
+    const totalPages = Math.ceil(totalGames / limit);
+    const offset = limit * (page - 1);
+
+    const games = await Game.find({
+      genre: genre,
+    })
+      .skip(offset)
+      .limit(limit);
+
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { games, page, totalPages },
+      null,
+      "Genre Game listed"
     );
   } catch (error) {
     next(error);
