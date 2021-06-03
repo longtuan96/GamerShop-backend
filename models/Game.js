@@ -19,7 +19,7 @@ const gameSchema = Schema(
       },
     ],
     poster: { type: String, required: true },
-    poster_vertical: { type: String, required: true },
+    poster_vertical: { type: String, default: "" },
     picture: { type: String, required: true },
     icon: { type: String, required: true },
     publisher: { type: String, required: true },
