@@ -56,9 +56,9 @@ gameController.getGames = async (req, res, next) => {
     const totalPages = Math.ceil(totalGames / limit);
     const offset = limit * (page - 1);
 
-    const games = await Game.find({ ...filter })
-      .skip(offset)
-      .limit(limit);
+    const games = await Game.find({ ...filter });
+    // .skip(offset)
+    // .limit(limit);
 
     utilsHelper.sendResponse(
       res,

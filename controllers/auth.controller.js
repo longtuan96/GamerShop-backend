@@ -26,5 +26,31 @@ authController.loginWithEmail = async (req, res, next) => {
     next(error);
   }
 };
+authController.loginWithFacebookOrGoogle = async (req, res, next) => {
+  try {
+    let user = req.user;
+    if (user) {
+      user = await User.findOneAndUpdate(
+        { _id: user._id },
+        { avatarUrl: user.avatarUrl }, // I want to get recent avatar from avatar picture from facebook
+        { new: true }
+      );
 
+      const accessToken = await user.generateToken();
+
+      res.status(200).json({
+        success: true,
+        data: { user, accessToken },
+        message: "Login successful",
+      });
+    } else {
+      throw new Error("Login fail");
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
 module.exports = authController;
